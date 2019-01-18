@@ -99,8 +99,9 @@ static void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id);
   * Init USB host library, add supported class and start the library
   * @retval None
   */
-void MX_USB_HOST_Init(void) {
-	/* USER CODE BEGIN USB_HOST_Init_PreTreatment */
+void MX_USB_HOST_Init(void)
+{
+  /* USER CODE BEGIN USB_HOST_Init_PreTreatment */
 
 	USBHFatFSBinarySemaphore = xSemaphoreCreateBinary();
 
@@ -114,18 +115,18 @@ void MX_USB_HOST_Init(void) {
 		_Error_Handler(__FILE__, __LINE__);
 	}
 
-	/* USER CODE END USB_HOST_Init_PreTreatment */
+  /* USER CODE END USB_HOST_Init_PreTreatment */
+  
+  /* Init host Library, add supported class and start the library. */
+  USBH_Init(&hUsbHostFS, USBH_UserProcess, HOST_FS);
 
-	/* Init host Library, add supported class and start the library. */
-	USBH_Init(&hUsbHostFS, USBH_UserProcess, HOST_FS);
+  USBH_RegisterClass(&hUsbHostFS, USBH_MSC_CLASS);
 
-	USBH_RegisterClass(&hUsbHostFS, USBH_MSC_CLASS);
+  USBH_Start(&hUsbHostFS);
 
-	USBH_Start(&hUsbHostFS);
+  /* USER CODE BEGIN USB_HOST_Init_PostTreatment */
 
-	/* USER CODE BEGIN USB_HOST_Init_PostTreatment */
-
-	/* USER CODE END USB_HOST_Init_PostTreatment */
+  /* USER CODE END USB_HOST_Init_PostTreatment */
 }
 
 /*

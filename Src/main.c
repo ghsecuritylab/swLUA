@@ -68,6 +68,7 @@
 
 #include "stlua_modules/lcd.h"
 #include "stlua_modules/ts.h"
+#include "stlua_modules/rtos.h"
 
 /* USER CODE END Includes */
 
@@ -158,6 +159,10 @@ static void MX_TIM7_Init(void);
 void StartDefaultTask(void const * argument);
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+                                
+                                
+                                
+                                
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -277,7 +282,7 @@ int main(void)
 	  xputs(ANSI_FG_RED "FAILED TO CREATE DEFAULT TASK\n" ANSI_FG_DEFAULT);
   }
 
-  osThreadDef(luaTask, StartLuaTask, osPriorityNormal, 0, 4096);
+  osThreadDef(luaTask, StartLuaTask, osPriorityNormal, 0, 4096 + 1024);
   luaTaskHandle = osThreadCreate(osThread(luaTask), NULL);
 
   if (luaTaskHandle == NULL) {
@@ -1429,6 +1434,7 @@ void StartLuaTask(void const * argument) {
 	luaL_openlibs(L);
 	stlua_open_lib_lcd(L);
 	stlua_open_lib_ts(L);
+	stlua_open_lib_rtos(L);
 
 	lua_pushcfunction(L, stlua_delay);
 	lua_setglobal(L, "delay");

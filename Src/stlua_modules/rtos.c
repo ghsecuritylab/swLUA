@@ -9,7 +9,10 @@
 
 #include "stlua_modules/common.h"
 
-#include "FreeRTOS.h"
+#include "cmsis_os.h"
+
+#include "term_io.h"
+#include <stdio.h>
 
 static int rtos_yield(lua_State *L) {
 	taskYIELD();
@@ -24,31 +27,40 @@ static int rtos_delay(lua_State *L) {
 	return 0;
 }
 
-static int rtos_delay_until(lua_State *L) {
-	osTim
-	osDelayUntil();
-	return 0;
+static int rtos_get_milis(lua_State *L) {
+	int ms = osKernelSysTick() * portTICK_PERIOD_MS;
+
+	lua_pushinteger(L, ms);
+
+	return 1;
+}
+
+static int rtos_get_seconds(lua_State *L) {
+	TickType_t ticks = osKernelSysTick();
+	double seconds = ((double)ticks  * portTICK_PERIOD_MS / 1000.0);
+
+	lua_pushnumber(L, seconds);
+
+	return 1;
 }
 
 static const luaL_Reg lib[] = {
 	{"yield", rtos_yield},
 	{"delay", rtos_delay},
-
-
-	{"", NULL},
+	{"get_milis", rtos_get_milis},
+	{"get_seconds", rtos_get_seconds},
 
 	{NULL, NULL}
 };
 
-static void map_constants(lua_State *L) {
-	stlua_setfield_integer(L, "GESTURE_NONE", GEST_ID_NO_GESTURE);
-	stlua_setfield_integer(L, "GESTURE_MOVE_UP", GEST_ID_MOVE_UP);
-
-}
+//static void map_constants(lua_State *L) {
+//
+//
+//}
 
 static int stlua_open_rtos(lua_State *L) {
 	luaL_newlib(L, lib); /* new module */
-	map_constants(L);
+//	map_constants(L);
 	return 1;
 }
 

@@ -59,8 +59,6 @@
 
 /* USER CODE BEGIN 0 */
 
-extern void xprintf(const char *, ...);
-
 /* USER CODE END 0 */
 
 /* Support files for GNU libc.  Files in the system namespace go here.

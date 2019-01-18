@@ -117,10 +117,10 @@ static int display_string(lua_State * L) {
 		const char * s = luaL_checkstring(L, -1);
 		BSP_LCD_DisplayStringAtLine(line, (uint8_t*) s);
 	} else { // 4 args
-		uint16_t x = luaL_checkinteger(L, -3);
-		uint16_t y = luaL_checkinteger(L, -2);
-		const char * s = luaL_checkstring(L, -1);
-		Text_AlignModeTypdef m = (Text_AlignModeTypdef) luaL_checkinteger(L, 4);
+		uint16_t x = luaL_checkinteger(L, -4);
+		uint16_t y = luaL_checkinteger(L, -3);
+		const char * s = luaL_checkstring(L, -2);
+		Text_AlignModeTypdef m = (Text_AlignModeTypdef) luaL_checkinteger(L, -1);
 
 		BSP_LCD_DisplayStringAt(x, y, (uint8_t*) s, m);
 	}
@@ -238,10 +238,10 @@ static int swap_buffers(lua_State * L) {
 	while (!(LTDC->CDSR & LTDC_CDSR_VSYNCS))
 		;
 
-	BSP_LCD_SetLayerVisible(BSP_LCD_GetCurrentLayer(), DISABLE);
+	BSP_LCD_SetLayerVisible(BSP_LCD_GetCurrentLayer(), ENABLE);
 	uint32_t newLayerIndex = (BSP_LCD_GetCurrentLayer() + 1) % MAX_LAYER_NUMBER;
 
-	BSP_LCD_SetLayerVisible(newLayerIndex, ENABLE);
+	BSP_LCD_SetLayerVisible(newLayerIndex, DISABLE);
 	BSP_LCD_SelectLayer(newLayerIndex);
 
 	return 0;
