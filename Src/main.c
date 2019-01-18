@@ -204,6 +204,8 @@ int main(void)
 
   initialise_monitor_handles();
 
+  // XXX: linker flag required -u __printf_float
+
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/

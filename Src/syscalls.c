@@ -407,7 +407,6 @@ int _open(char *path, int flags, ...)
 
 	if (flags & ~(O_RDONLY | O_WRONLY | O_RDWR | O_CREAT | O_APPEND | O_TRUNC))
 	{
-		xprintf("UNIMPLEMENTED OPEN FLAGS path: %s, flags: %d", path, flags);
 		errno = ENOSYS;
 		freeDescriptorTableEntry(descriptorTableIndex);
 		return -1;
