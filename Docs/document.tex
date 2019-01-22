@@ -53,7 +53,37 @@ Nieocenioną pomoc przyniósł nam dr inż. Robert Brzoza-Woch
 
 \newpage
 
-\section{Dokumentacja}
+
+\section{Działanie platformy uruchomieniowej}
+Aby użyć interpretera Lua wystarczy:
+\begin{itemize}
+  \item Uruchomić urządzenie
+  \item Podpiąć nośnik USB MSC (Pendrive) z programem napisanym w języku Lua. Plik musi być na głównej partycji nośnika oraz nazywać się \texttt{script.lua}
+\end{itemize}
+
+\section{Działanie wewnętrzne}
+Przy uruchomieniu urządzenia, w pierwszej kolejności inicjalizowane są wszystkie potrzebne komponenty znajdujące się na urządzeniu.
+Następnie system rozpoczyna inizjalizację maszyny wirtualnej języka Lua oraz rejestruje wszystkie dostępne moduły (LCS, RTOS, TS). 
+W tym momencie następuje oczekiwanie na dostęp do pliku 1:/script.lua. W przypadku znalezienia pliku (czyli też nośnika) zostaje on 
+załadowany i wykonany przez dostępna maszynę wirtualną.
+
+\section{Działanie implementacji API Newlib C}
+Dostęp do plików został rozwiązany w następujący sposób: Informacje o strukturach są przechowywane wraz z deskryptorem pliku w statucznej 
+globalnej synchronizowanej tablicy. Zapewnia to symulację działania realnego systemu operacyjnego z dostępem do standardowych funkcji STDLIB 
+(strumienie STDIN, STDOUT oraz STDERR są odpowiednio traktowane).
+
+\section{Przykłady}
+Przykład działania znajduje się na repozytoriu projektu w folderze Scripts
+
+\section{Przyszłość i kierunek rozwoju platformy}
+W zamyśle autorów jest stworzenie uniwersalnej biblioteki (BSP-like) pozwalającej na użycie maszyny wirtualnej LUA do prostego rozszerzania 
+funkcjonalności programu bazowego. Może to znaleźć zastosowanie między innymi w personalizacji systemów zautomatyzowanych oraz możliwość 
+tworzenia przez społezność serwisów do dzielenia się gotowymi funkcjonalnościami.\\
+Proponowanym sposobem działania jest możliwość sterowania maszyną wirtualną za pomocą kolejki rozkazów systemu operacyjnego. 
+Rozważana jest też możliwość uruchomienia modułu jako osobnego zadania, które nie zawłaszcza zasobów i wykonuje się jako częściowo odseparowany wątek.
+
+
+\section{Dokumentacja LUA API}
 
 \subsection{Moduł RTOS}
 
@@ -155,37 +185,5 @@ Ilość ramek używanych do rysowania (N-buffering np. double-buffering dla 2 ra
 \begin{itemize}
   \item lcd.LAYERS
 \end{itemize}
-
-\section{Działanie platformy uruchomieniowej}
-Aby użyć interpretera Lua wystarczy:
-\begin{itemize}
-  \item Uruchomić urządzenie
-  \item Podpiąć nośnik USB MSC (Pendrive) z programem napisanym w języku Lua. Plik musi być na głównej partycji nośnika oraz nazywać się \texttt{script.lua}
-\end{itemize}
-
-\section{Działanie wewnętrzne}
-Przy uruchomieniu urządzenia, w pierwszej kolejności inicjalizowane są wszystkie potrzebne komponenty znajdujące się na urządzeniu.
-Następnie system rozpoczyna inizjalizację maszyny wirtualnej języka Lua oraz rejestruje wszystkie dostępne moduły (LCS, RTOS, TS). 
-W tym momencie następuje oczekiwanie na dostęp do pliku 1:/script.lua. W przypadku znalezienia pliku (czyli też nośnika) zostaje on 
-załadowany i wykonany przez dostępna maszynę wirtualną.\\
-\\
-\textbf{UWAGA!} Ze względu na stan projektu proszę nie wyciągać nośnika ze skryptem podczas jego wykonania. 
-Doprowadza to do problemów z synchronizacją dostępu do systemu plików i zatrzymanie wykonania programu.
-
-\section{Działanie implementacji API Newlib C}
-Dostęp do plików został rozwiązany w następujący sposób: Informacje o strukturach są przechowywane wraz z deskryptorem pliku w statucznej 
-globalnej synchronizowanej tablicy. Zapewnia to symulację działania realnego systemu operacyjnego z dostępem do standardowych funkcji STDLIB 
-(strumienie STDIN, STDOUT oraz STDERR są odpowiednio traktowane).
-
-\section{Przykłady}
-Przykład działania znajduje się na repozytoriu projektu w folderze Scripts
-
-\section{Przyszłość i kierunek rozwoju platformy}
-W zamyśle autorów jest stworzenie uniwersalnej biblioteki (BSP-like) pozwalającej na użycie maszyny wirtualnej LUA do prostego rozszerzania 
-funkcjonalności programu bazowego. Może to znaleźć zastosowanie między innymi w personalizacji systemów zautomatyzowanych oraz możliwość 
-tworzenia przez społezność serwisów do dzielenia się gotowymi funkcjonalnościami.\\
-Proponowanym sposobem działania jest możliwość sterowania maszyną wirtualną za pomocą kolejki rozkazów systemu operacyjnego. 
-Rozważana jest też możliwość uruchomienia modułu jako osobnego zadania, które nie zawłaszcza zasobów i wykonuje się jako częściowo odseparowany wątek.
-
 
 \end{document}
