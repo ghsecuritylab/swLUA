@@ -115,8 +115,6 @@ Najprostszym opisem użycia jest:
 # Działanie wewnętrzne:
 Najpierw inicjalizowane są wszystkie potrzebne komponenty znajdujące się na urządzeniu. 
 Następnie system rozpoczyna inicjalizację maszyny wirtualnej języka LUA oraz rejestruje wszelkie potrzebne oraz dostępne moduły (LCS, RTOS, TS). W tym momencie następuje oczekiwanie na dostęp do pliku 1:/script.lua. W przypadku znalezienia pliku (czyli też nośnika) zostaje on załadowany i wykonany przez dostępna maszynę wirtualną.
-**UWAGA!** Ze względu na stan projektu proszę nie wyciągać nośnika ze skryptem podczas jego wykonania.
-Doprowadza to do problemów z synchronizacją dostępu do systemu plików i zatrzymanie wykonania programu.
 
 # Działanie implementacji API Newlib C w celu zapewniena dostępu do standardowego API C dla LUA
 Dostęp do plików został rozwiązany w następujący sposób:
