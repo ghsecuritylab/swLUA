@@ -1,0 +1,191 @@
+\documentclass{article}
+
+\usepackage{listings}
+\usepackage{color}
+\usepackage[T1]{fontenc}
+\usepackage[polish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+
+
+
+\author{Jakub Czapiga, Krystian Życiński}
+\title{Środowisko uruchomieniowe dla urządzenia wbudowanego: Lua}
+
+
+\begin{document}
+
+\begin{figure}[t]
+    \includegraphics[width=5cm, height=10cm]{agh.jpg}
+    \centering
+\end{figure}
+
+\maketitle
+
+\pagebreak
+
+\section{Wprowadzenie}
+
+Niniejsza dokumentacja dotyczy projektu z przedmiotu Systemy Wbudowane na Wydziale Informatyki, Elektroniki i Telekomunikacji Akademii
+Górniczo Hutniczej im. Stanisława Staszica w Krakowie. W dokumencie znajdują się użyte narzędzia, źródła oraz funkcje Lua dostępne na
+urządzeniu. 
+
+\section{Użyte narzędzia}
+
+\subsection{Mikrokontroler}
+
+W projekcie został użyty mikrokontroler STM32F746G-DISCO z ekranem dotykowym 480x272. Po dokładne specyfikacje zachęcamy do odwiedzenia 
+strony producenta i dokumentacji produktu.
+
+\subsection{Oprogramowanie}
+
+Do wygenerowania kodu wykorzystany został STM32CubeMx\\ 
+Jako środowisko programistyczne został użyty Atollic TRUEStudio\\             
+Jądro systemu pochodzi z FreeRTOS.
+
+\subsection{Źródła}
+
+Jako główne źródło informacji służyła dokumentacja STM32F746G-Disco BSP (Board Support Library). Wykorzystana została także dokumentacja 
+Lua.\\
+Nieocenioną pomoc przyniósł nam dr inż. Robert Brzoza-Woch
+
+\newpage
+
+\section{Dokumentacja}
+
+\subsection{Moduł RTOS}
+
+\begin{enumerate}
+  \item \texttt{rtos.yield()} - powrót do schedulera systemowego RTOS. Działanie podobne do \texttt{taskYIELD()} w języku C.
+  \item \texttt{rtos.delay(ms)} - powrót do schedulera systemowego RTOS na minimum ms milisekund. Działnie jak \texttt{osDelay(ms)} w C.
+  \item \texttt{rtos.get\_milis()} - zwraca czas od uruchomienia urządzenia (w milisekundach).
+  \item \texttt{rtos.get\_seconds()} - zwraca czas od uruchomienia urządzenia (w sekundach), typ float.
+\end{enumerate}
+
+\subsection{Moduł TouchScreen}
+
+\begin{enumerate}
+  \item \texttt{ts.get\_status()} - zwraca wartość ostatniego skanu ekranu dotykowego. Struktura wyjściowa\\
+  \{touches = \big[\{x = 123, y = 123\}, \{\ldots\} \ldots\big], gesture = GESTURE\_ID\}
+  Gesture jest wynikiem wykrywania podstawowych gestów i jest zależne od wsparcia ekranu. Dostępne wartości:
+  \begin{itemize}
+    \item GESTURE\_NONE - brak gestu
+    \item GESTURE\_MOVE\_UP - ruch w górę
+    \item GESTURE\_MOVE\_RIGHT - ruch w prawo
+    \item GESTURE\_MOVE\_DOWN - ruch w dół
+    \item GESTURE\_MOVE\_LEFT - ruch w lewo
+    \item GESTURE\_ZOOM\_IN - ruch dwoma palcami do siebie
+    \item GESTURE\_ZOOM\_OUT - ruch dwoma palcami od siebie
+  \end{itemize}
+\end{enumerate}
+
+\subsection{Moduł LCD}
+
+\begin{enumerate}
+  \item \texttt{lcd.get\_screen\_size()} - zwraca wymiary ekranu jako parę\\\{ x = x\_size, y = y\_size \}.
+  \item \texttt{lcd.set\_text\_color(color)} - ustawia kolor rysowanych obiektów. Dostępne kolory w sekcji 3.4 Stałe LCD.
+  \item \texttt{lcd.get\_text\_color()} - zwraca aktualnie używany kolor.
+  \item \texttt{lcd.set\_back\_color(color)} - ustawia kolor wypełnienia tła rysowanych obiektów.
+  \item \texttt{lcd.get\_back\_color()} - zwraca aktualnie używany kolor tła.
+  \item \texttt{lcd.read\_pixel(x, y)} - zwraca kolor pixela na pozycji \texttt{x,y}. Pozycja dana do funkcji nie może wychodzić poza rozmiar ekranu.
+  \item \texttt{lcd.draw\_pixel(x, y, color)} - ustawia pixel na pozycji \texttt{x,y} kolorem \texttt{color}.
+  \item \texttt{lcd.clear(color)} - czyści bufor kolorem \texttt{color}.
+  \item \texttt{lcd.clear\_string\_line(line)} - czyści daną linię, funkcja używana przy rysowaniu tekstu.
+  \item \texttt{lcd.display\_string(line, text)} - wyświetla tekst w danej linii.
+  \item \texttt{lcd.display\_string(x, y, text, alignment)} - wyświetla dany tekst na pozycji \texttt{x,y} przy wybranym układzie.
+  \item \texttt{lcd.display\_char(x, y, c)} - wyświetla dany znak na pozycji \texttt{x,y}.
+  \item \texttt{lcd.draw\_horizontal\_line(x, y, length)} - rysuje poziomą linię długości \texttt{length} na pozycji \texttt{x,y}.
+  \item \texttt{lcd.draw\_vertical\_line(x, y, length)} - rysuje pionową linię długości \texttt{length} na pozycji \texttt{x,y}.
+  \item \texttt{lcd.draw\_line(x1, y1, x2, y2)} - rysuje linię między punktem \texttt{x1,y1} a punktem \texttt{x2,y2}.
+  \item \texttt{lcd.draw\_rect(x1, y1, x2, y2)} - rysuje pusty prostokąt między punktami \texttt{(x1,y1)} i \texttt{x2,y2}.
+  \item \texttt{lcd.draw\_circle(x, y, r)} - rysuje pusty okrąg o promieniu \texttt{r} ze środkiem w punkcie \texttt{x,y}.
+  \item \texttt{lcd.draw\_ellipse(x, y, rx, ry)} - rysuje pustą elipsę o promieniach \texttt{rx, ry} ze środkiem w punkcie \texttt{x,y}.
+  \item \texttt{lcd.fill\_rect(x1, y1, x2, y2)} - rysuje wypełniony prostokąt między punktami \texttt{(x1,y1)} i \texttt{x2,y2}.
+  \item \texttt{lcd.fill\_circle(x, y, r)} - rysuje koło o promieniu \texttt{r} ze środkiem w punkcie \texttt{x,y}.
+  \item \texttt{lcd.fill\_ellipse(x, y, rx, ry)} - rysuje wypełnioną elipsę o promieniach \texttt{rx, ry} ze środkiem w punkcie \texttt{x,y}.
+  \item \texttt{lcd.swap\_buffers()} - przenosi obecnie rysowaną klatkę na bufor przedni i wyświetla ją, a poprzednią ustawia jako 
+  niewidoczną i gotową do rysowania.
+  \item \texttt{lcd.make\_color(r, g, b, a)} - tworzy kolor o parametrach \texttt{r,g,b,a}. Parametry muszą być z zakresu \texttt{\big[0.0; 1.0\big]}.
+\end{enumerate}
+
+\subsection{Stałe LCD}
+
+\subsubsection{Kolory}
+
+\begin{itemize}
+  \item lcd.COLOR\_BLUE
+  \item lcd.COLOR\_GREEN
+  \item lcd.COLOR\_RED
+  \item lcd.COLOR\_CYAN
+  \item lcd.COLOR\_MAGENTA
+  \item lcd.COLOR\_YELLOW
+  \item lcd.COLOR\_LIGHTBLUE
+  \item lcd.COLOR\_LIGHTGREEN
+  \item lcd.COLOR\_LIGHTRED
+  \item lcd.COLOR\_LIGHTCYAN
+  \item lcd.COLOR\_LIGHTMAGENTA
+  \item lcd.COLOR\_DARKBLUE
+  \item lcd.COLOR\_DARKGREEN
+  \item lcd.COLOR\_DARKRED
+  \item lcd.COLOR\_DARKCYAN
+  \item lcd.COLOR\_DARKMAGENTA
+  \item lcd.COLOR\_DARKYELLOW
+  \item lcd.COLOR\_WHITE
+  \item lcd.COLOR\_LIGHTGRAY
+  \item lcd.COLOR\_GRAY
+  \item lcd.COLOR\_DRKGRAY   
+  \item lcd.COLOR\_BLACK
+  \item lcd.COLOR\_BROWN
+  \item lcd.COLOR\_ORANGE
+  \item lcd.COLOR\_TRANSPARENT
+\end{itemize}
+
+\subsubsection{Pozycjonowanie tekstu}
+
+\begin{itemize}
+  \item lcd.CENTER\_MODE
+  \item lcd.RIGHT\_MODE
+  \item lcd.LEFT\_MODE
+\end{itemize}
+
+\subsection{Ilość ramek}
+Ilość ramek używanych do rysowania (N-buffering np. double-buffering dla 2 ramek).
+\begin{itemize}
+  \item lcd.LAYERS
+\end{itemize}
+
+\section{Działanie platformy uruchomieniowej}
+Aby użyć interpretera Lua wystarczy:
+\begin{itemize}
+  \item Uruchomić urządzenie
+  \item Podpiąć nośnik USB MSC (Pendrive) z programem napisanym w języku Lua. Plik musi być na głównej partycji nośnika oraz nazywać się \texttt{script.lua}
+\end{itemize}
+
+\section{Działanie wewnętrzne}
+Przy uruchomieniu urządzenia, w pierwszej kolejności inicjalizowane są wszystkie potrzebne komponenty znajdujące się na urządzeniu.
+Następnie system rozpoczyna inizjalizację maszyny wirtualnej języka Lua oraz rejestruje wszystkie dostępne moduły (LCS, RTOS, TS). 
+W tym momencie następuje oczekiwanie na dostęp do pliku 1:/script.lua. W przypadku znalezienia pliku (czyli też nośnika) zostaje on 
+załadowany i wykonany przez dostępna maszynę wirtualną.\\
+\\
+\textbf{UWAGA!} Ze względu na stan projektu proszę nie wyciągać nośnika ze skryptem podczas jego wykonania. 
+Doprowadza to do problemów z synchronizacją dostępu do systemu plików i zatrzymanie wykonania programu.
+
+\section{Działanie implementacji API Newlib C}
+Dostęp do plików został rozwiązany w następujący sposób: Informacje o strukturach są przechowywane wraz z deskryptorem pliku w statucznej 
+globalnej synchronizowanej tablicy. Zapewnia to symulację działania realnego systemu operacyjnego z dostępem do standardowych funkcji STDLIB 
+(strumienie STDIN, STDOUT oraz STDERR są odpowiednio traktowane).
+
+\section{Przykłady}
+Przykład działania znajduje się na repozytoriu projektu w folderze Scripts
+
+\section{Przyszłość i kierunek rozwoju platformy}
+W zamyśle autorów jest stworzenie uniwersalnej biblioteki (BSP-like) pozwalającej na użycie maszyny wirtualnej LUA do prostego rozszerzania 
+funkcjonalności programu bazowego. Może to znaleźć zastosowanie między innymi w personalizacji systemów zautomatyzowanych oraz możliwość 
+tworzenia przez społezność serwisów do dzielenia się gotowymi funkcjonalnościami.\\
+Proponowanym sposobem działania jest możliwość sterowania maszyną wirtualną za pomocą kolejki rozkazów systemu operacyjnego. 
+Rozważana jest też możliwość uruchomienia modułu jako osobnego zadania, które nie zawłaszcza zasobów i wykonuje się jako częściowo odseparowany wątek.
+
+
+\end{document}
