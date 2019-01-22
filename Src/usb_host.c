@@ -142,8 +142,10 @@ static void USBH_UserProcess  (USBH_HandleTypeDef *phost, uint8_t id)
 
   case HOST_USER_DISCONNECTION:
   {
-	  if(xSemaphoreTake(USBHFatFSBinarySemaphore, 0) != pdTRUE) {
-		  _Error_Handler(__FILE__, __LINE__);
+	  if(USBHFatFSBinarySemaphore != NULL) {
+		  if(xSemaphoreTakeFromISR(USBHFatFSBinarySemaphore, NULL) != pdTRUE) {
+			  _Error_Handler(__FILE__, __LINE__);
+		  }
 	  }
 	  f_mount(NULL, USBHPath, 0);
   }
@@ -156,7 +158,7 @@ static void USBH_UserProcess  (USBH_HandleTypeDef *phost, uint8_t id)
 		_Error_Handler(__FILE__, __LINE__);
 	}
 
-	xSemaphoreGive(USBHFatFSBinarySemaphore);
+	xSemaphoreGiveFromISR(USBHFatFSBinarySemaphore, NULL);
   }
   Appli_state = APPLICATION_READY;
   break;

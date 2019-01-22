@@ -1498,6 +1498,11 @@ void LCD_Init(void) {
 	//ustawiamy obie warstwy nieprzezroczyste
 	BSP_LCD_SetTransparency(0, 255);
 	BSP_LCD_SetTransparency(1, 255);
+
+	BSP_LCD_SetLayerVisible(0, ENABLE);
+
+	BSP_LCD_SetLayerVisible(1, DISABLE);
+	BSP_LCD_SelectLayer(1);
 }
 
 extern ApplicationTypeDef Appli_state;
