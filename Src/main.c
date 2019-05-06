@@ -255,6 +255,9 @@ int main(void)
 
   xputs(ANSI_FG_GREEN "DEVICE STARTING\n" ANSI_FG_DEFAULT);
 
+  xprintf("LAYER 0 address: %x\n", lcd_image_fg);
+  xprintf("LAYER 1 address: %x\n", lcd_image_bg);
+
   LCD_Init();
 
   BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
