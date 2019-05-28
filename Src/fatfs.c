@@ -68,13 +68,16 @@ void MX_FATFS_Init(void)
   /*## FatFS: Link the SD driver ###########################*/
   retSD = FATFS_LinkDriver(&SD_Driver, SDPath);
   /*## FatFS: Link the USBH driver ###########################*/
-  retUSBH = FATFS_LinkDriver(&USBH_Driver, USBHPath);
+//  retUSBH = FATFS_LinkDriver(&USBH_Driver, USBHPath);
 
   /* USER CODE BEGIN Init */
 
-  if (retUSBH != 0) {
-	  _Error_Handler(__FILE__, __LINE__);
-  }
+//  if (retUSBH != 0) {
+//	  _Error_Handler(__FILE__, __LINE__);
+//  }
+
+//  f_mount(&SDFatFS,USBHPath,0);
+  f_mount(&SDFatFS,SDPath,0);
 
   /* USER CODE END Init */
 }

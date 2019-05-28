@@ -258,16 +258,16 @@ int _write(int file, char *ptr, int len)
 		FIL * fil = fileDescriptorMapTable[descriptorTableIndex].h.fil_ptr;
 		UINT bw = 0;
 
-		while(xSemaphoreTake(USBHFatFSBinarySemaphore, portMAX_DELAY) != pdTRUE) {
-			;
-		}
+//		while(xSemaphoreTake(USBHFatFSBinarySemaphore, portMAX_DELAY) != pdTRUE) {
+//			;
+//		}
 		{
 			if (f_write(fil, ptr, len, &bw) != FR_OK) {
 				_Error_Handler(__FILE__, __LINE__);
 				return 0;
 			}
 		}
-		xSemaphoreGive(USBHFatFSBinarySemaphore);
+//		xSemaphoreGive(USBHFatFSBinarySemaphore);
 
 		return bw;
 	}
@@ -428,16 +428,19 @@ int _open(char *path, int flags, ...)
 		mode |= FA_OPEN_APPEND;
 	}
 
-	while(xSemaphoreTake(USBHFatFSBinarySemaphore, portMAX_DELAY) != pdTRUE) {
-		;
-	}
+//	extern void debug_msg(const char*);
+//	debug_msg("Waiting for USB semaphore");
+//	while(xSemaphoreTake(USBHFatFSBinarySemaphore, portMAX_DELAY) != pdTRUE) {
+//		;
+//	}
+//	debug_msg("USB semaphore got");
 	{
 		if (f_open(fil, path, mode) != FR_OK) {
 			freeDescriptorTableEntry(descriptorTableIndex);
 			return -1;
 		}
 	}
-	xSemaphoreGive(USBHFatFSBinarySemaphore);
+//	xSemaphoreGive(USBHFatFSBinarySemaphore);
 
 	fileDescriptorMapTable[descriptorTableIndex].d = descriptorTableIndex + FILE_DESCRIPTOR_BASE;
 	fileDescriptorMapTable[descriptorTableIndex].h.fil_ptr = fil;

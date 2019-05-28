@@ -56,6 +56,7 @@
 #endif /* MDK ARM Compiler */
 
 /* USER CODE BEGIN 0 */
+#include "lwip/dns.h"
 
 /* USER CODE END 0 */
 /* Private function prototypes -----------------------------------------------*/
@@ -99,6 +100,7 @@ void MX_LWIP_Init(void)
   {
     /* When the netif is fully configured this function must be called */
     netif_set_up(&gnetif);
+    dhcp_start(&gnetif);
   }
   else
   {
@@ -107,9 +109,26 @@ void MX_LWIP_Init(void)
   }
 
   /* Start DHCP negotiation for a network interface (IPv4) */
-  dhcp_start(&gnetif);
+
 
 /* USER CODE BEGIN 3 */
+//  {
+//	  ip4_addr_t ip = IPADDR4_INIT_BYTES(10, 42, 0, 140);
+//	  ip4_addr_t mask = IPADDR4_INIT_BYTES(255, 255, 255, 0);
+//	  ip4_addr_t gw = IPADDR4_INIT_BYTES(10, 42, 0, 1);
+//	  netif_set_addr(netif_default, &ip, &mask, &gw);
+//  }
+//
+//  ip4_addr_t dns_ip = IPADDR4_INIT_BYTES(1, 1, 1, 1);
+//
+//  dns_setserver(0, &dns_ip);
+//
+  extern void xprintf(const char *, ...);
+  xprintf("LWIP configuration done.\r\n");
+
+  char haddr[32] = {0};
+  ipaddr_ntoa_r(netif_ip4_addr(netif_default), haddr, 32);
+  xprintf("IP: %64s\r\n", haddr);
 
 /* USER CODE END 3 */
 }

@@ -775,9 +775,13 @@
 ** without modifying the main part of the file.
 */
 
-
-
-
+//#include "FreeRTOS.h"
+//#include "semphr.h"
+//
+//extern SemaphoreHandle_t luaCallMutex;
+//
+//#define lua_lock(L) while(xSemaphoreTakeRecursive(luaCallMutex, portMAX_DELAY) != pdTRUE) {;}
+//#define lua_unlock(L) xSemaphoreGiveRecursive(luaCallMutex)
 
 #endif
 

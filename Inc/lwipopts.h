@@ -60,6 +60,14 @@
 
 /* Within 'USER CODE' section, code will be kept by default at each generation */
 /* USER CODE BEGIN 0 */
+#define LWIP_DEBUG 1
+
+#define MQTT_DEBUG LWIP_DBG_ON
+#define MEMP_DEBUG LWIP_DBG_ON
+
+#ifndef LWIP_MQTT
+# define LWIP_MQTT 1
+#endif
 
 /* USER CODE END 0 */
 

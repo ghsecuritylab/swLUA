@@ -53,7 +53,7 @@
 /-----------------------------------------------------------------------------*/
 #include "stm32f7xx_hal.h"
 #include "cmsis_os.h"    /* _FS_REENTRANT set to 1 */
-#include "bsp_driver_sd.h"
+#include "stm32f7_diskio_dma_rtos.h"
 #include "usbh_core.h"
 #include "usbh_msc.h"
 

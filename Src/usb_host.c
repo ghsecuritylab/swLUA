@@ -144,7 +144,7 @@ static void USBH_UserProcess  (USBH_HandleTypeDef *phost, uint8_t id)
   {
 	  if(USBHFatFSBinarySemaphore != NULL) {
 		  if(xSemaphoreTakeFromISR(USBHFatFSBinarySemaphore, NULL) != pdTRUE) {
-			  _Error_Handler(__FILE__, __LINE__);
+//			  _Error_Handler(__FILE__, __LINE__);
 		  }
 	  }
 	  f_mount(NULL, USBHPath, 0);
@@ -159,6 +159,7 @@ static void USBH_UserProcess  (USBH_HandleTypeDef *phost, uint8_t id)
 	}
 
 	xSemaphoreGiveFromISR(USBHFatFSBinarySemaphore, NULL);
+	debug_msg("USB READY");
   }
   Appli_state = APPLICATION_READY;
   break;

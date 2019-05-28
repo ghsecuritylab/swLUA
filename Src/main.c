@@ -69,6 +69,9 @@
 #include "stlua_modules/lcd.h"
 #include "stlua_modules/ts.h"
 #include "stlua_modules/rtos.h"
+#include "stlua_modules/mqtt.h"
+
+#include "lwip/netdb.h"
 
 /* USER CODE END Includes */
 
@@ -118,6 +121,7 @@ osThreadId defaultTaskHandle;
 /* Private variables ---------------------------------------------------------*/
 
 osThreadId luaTaskHandle;
+SemaphoreHandle_t luaCallMutex = NULL;
 
 /* SCREEN PROPERTIES */
 #define LCD_X_SIZE			RK043FN48H_WIDTH
@@ -171,8 +175,6 @@ extern void initialise_monitor_handles();
 
 void LCD_Init(void);
 
-void StartLuaTask(void const * argument);
-
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -181,15 +183,6 @@ int __io_putchar(int ch) {
 	debug_chr(ch);
 	return 0;
 }
-
-static int stlua_delay(lua_State * L) {
-	const TickType_t tt = luaL_checkinteger(L, 1);
-
-	vTaskDelay(tt / portTICK_PERIOD_MS);
-
-	return 0;
-}
-
 
 /* USER CODE END 0 */
 
@@ -251,16 +244,19 @@ int main(void)
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
 
+  (DBGMCU)->APB1FZ = 0x7E01BFF;
+  (DBGMCU)->APB2FZ = 0x70003;
+
   debug_init(&huart1);
 
-  xputs(ANSI_FG_GREEN "DEVICE STARTING\n" ANSI_FG_DEFAULT);
-
-  xprintf("LAYER 0 address: %x\n", lcd_image_fg);
-  xprintf("LAYER 1 address: %x\n", lcd_image_bg);
+  xputs(ANSI_FG_GREEN "\nDEVICE STARTING\n" ANSI_FG_DEFAULT);
 
   LCD_Init();
 
   BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
+
+  luaCallMutex = xSemaphoreCreateRecursiveMutex();
+  xSemaphoreGiveRecursive(luaCallMutex);
 
   /* USER CODE END 2 */
 
@@ -278,20 +274,13 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 4096);
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 1024 * 6);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
 
   if (defaultTaskHandle == NULL) {
 	  xputs(ANSI_FG_RED "FAILED TO CREATE DEFAULT TASK\n" ANSI_FG_DEFAULT);
-  }
-
-  osThreadDef(luaTask, StartLuaTask, osPriorityNormal, 0, 4096 + 1024);
-  luaTaskHandle = osThreadCreate(osThread(luaTask), NULL);
-
-  if (luaTaskHandle == NULL) {
-	  xputs(ANSI_FG_RED "FAILED TO CREATE LUA TASK\n" ANSI_FG_DEFAULT);
   }
 
   /* USER CODE END RTOS_THREADS */
@@ -1431,48 +1420,6 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-void StartLuaTask(void const * argument) {
-	UNUSED(argument);
-
-	lua_State * L = luaL_newstate();
-
-	luaL_openlibs(L);
-	stlua_open_lib_lcd(L);
-	stlua_open_lib_ts(L);
-	stlua_open_lib_rtos(L);
-
-	lua_pushcfunction(L, stlua_delay);
-	lua_setglobal(L, "delay");
-
-	// Wait for FS
-
-	TCHAR path[4+10+1] = {0};
-	strcat(&path[0], USBHPath);
-	strcat(&path[0], "script.lua");
-
-	xprintf("Loading Lua script\n");
-
-	if(luaL_loadfile(L, path)) {
-		xprintf("[ERROR] %s\n", lua_tostring(L, -1));
-	} else {
-		xprintf("File loaded\n");
-		if (lua_pcall(L, 0, LUA_MULTRET, 0)) {
-			xprintf("[ERROR] %s\n", lua_tostring(L, -1));
-		}
-	}
-
-	xprintf("Lua script loaded and executed\n");
-
-	lua_close(L);
-
-	BSP_LED_Init(LED1);
-
-	while(1) {
-		BSP_LED_Toggle(LED1);
-		osDelay(500);
-	}
-}
-
 void LCD_Init(void) {
 	if(BSP_LCD_Init() != LCD_OK) {
 		xprintf("Failed to initialize LCD\n");
@@ -1508,8 +1455,6 @@ void LCD_Init(void) {
 	BSP_LCD_SelectLayer(1);
 }
 
-extern ApplicationTypeDef Appli_state;
-
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -1519,22 +1464,54 @@ extern ApplicationTypeDef Appli_state;
   * @retval None
   */
 /* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void const * argument)
-{
-  /* init code for FATFS */
-  MX_FATFS_Init();
+void StartDefaultTask(void const * argument) {
+	/* init code for FATFS */
+	MX_FATFS_Init();
 
-  /* init code for USB_HOST */
-  MX_USB_HOST_Init();
+	/* init code for USB_HOST */
+	//  MX_USB_HOST_Init();
+	/* init code for LWIP */
+	MX_LWIP_Init();
 
-  /* init code for LWIP */
-  MX_LWIP_Init();
+	/* USER CODE BEGIN 5 */
 
-  /* USER CODE BEGIN 5 */
+	/* Infinite loop */
 
-  /* Infinite loop */
-  vTaskDelete(NULL); // END bcs we don't need this task
-  /* USER CODE END 5 */ 
+	while (ip4_addr_cmp(netif_ip4_addr(netif_default), IP4_ADDR_ANY)) {
+		osDelay(100);
+	}
+
+	lua_State * L = luaL_newstate();
+
+	luaL_openlibs(L);
+	stlua_open_lib_lcd(L);
+	stlua_open_lib_ts(L);
+	stlua_open_lib_rtos(L);
+	stlua_open_lib_mqtt(L);
+
+	// Wait for FS
+
+	TCHAR path[4 + 10 + 1] = { 0 };
+	strcat(&path[0], SDPath);
+	strcat(&path[0], "script.lua");
+
+	xprintf("Loading Lua script\n");
+
+	if (luaL_loadfile(L, path)) {
+		xprintf("[ERROR] %s\n", lua_tostring(L, -1));
+	} else {
+		xprintf("File loaded\n");
+		if (lua_pcall(L, 0, LUA_MULTRET, 0)) {
+			xprintf("[ERROR] %s\n", lua_tostring(L, -1));
+		}
+	}
+
+	xprintf("Lua script loaded and executed\n");
+
+	lua_close(L);
+
+	vTaskDelete(NULL);
+	/* USER CODE END 5 */
 }
 
 /**
